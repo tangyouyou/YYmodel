@@ -1,0 +1,21 @@
+<?php
+$name = 'test';
+$model = new YYmodel($name);
+$mode1 = new YYmodel($name);
+//$field = array('username','password','abc','56');
+//$field = 'user,password';
+//$model->field($field)->where('uid>1')->limit(55)->select();
+//$str =$model->getLastSql();
+//$array = array('username'=>'zhongwei','password'=>'123456');
+//$model->insert($array);
+//$a = $model->where('uid = 5')->delete();
+//$str = 'username =zhongwei';
+//$model->where('uid =5')->update($array);
+//$str =$model->getLastSql();
+//var_dump($str);
+$model->join('user','user.uid=test.uid')->where('uid=5')->limit(5)->select();
+$str =$model->getLastSql();
+var_dump($str);
+$model->select();
+$str =$model->getLastSql();
+var_dump($str);
