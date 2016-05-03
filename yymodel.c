@@ -130,7 +130,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, field)
 	if (Z_TYPE_P(field) == IS_ARRAY) {
 	HashTable *ht;
 	ht = Z_ARRVAL_P(field);
-
+#if PHP_VERSION_ID >= 70000
 	char *delim_char = ",";
 
 	// 这里需将delim_char的长度强制为1
@@ -139,7 +139,9 @@ PHP_METHOD(YYMODEL_EXT_NAME, field)
 	YYMODEL_G(field) = Z_STRVAL_P(return_value);
 
 	zend_string_release(delim);
+#else
 
+#endif
 	}
 	RETURN_ZVAL(getThis(), 1, 0);
 }
@@ -155,6 +157,17 @@ PHP_METHOD(YYMODEL_EXT_NAME, where)
 		return;
 	}
 	YYMODEL_G(where) = estrdup(ZSTR_VAL(where));
+#else
+	zval *where;
+	if (zend_parse_parameters(argc TSRMLS_CC, "z", &where) == FAILURE) {
+		return;
+	}
+	if (Z_TYPE_P(where) != IS_STRING) {
+		php_error_docref(NULL, E_WARNING, "the parameters must be a string");
+		RETURN_FALSE;
+	} else {
+		YYMODEL_G(where) = estrdup(Z_STRVAL_P(where));
+	}
 #endif
 	RETURN_ZVAL(getThis(), 1, 0);
 }
@@ -170,6 +183,17 @@ PHP_METHOD(YYMODEL_EXT_NAME, limit)
 		return;
 	}
 	YYMODEL_G(limit) = estrdup(ZSTR_VAL(limit));
+#else
+	zval *limit;
+	if (zend_parse_parameters(argc TSRMLS_CC, "z", &limit) == FAILURE) {
+		return;
+	}
+	if (Z_TYPE_P(limit) != IS_STRING) {
+		php_error_docref(NULL, E_WARNING, "the parameters must be a string");
+		RETURN_FALSE;
+	} else {
+		YYMODEL_G(limit) = estrdup(Z_STRVAL_P(limit));
+	}
 #endif
 	RETURN_ZVAL(getThis(), 1, 0);
 }
@@ -185,6 +209,17 @@ PHP_METHOD(YYMODEL_EXT_NAME, group)
 		return;
 	}
 	YYMODEL_G(group) = estrdup(ZSTR_VAL(group));
+#else
+	zval *group;
+	if (zend_parse_parameters(argc TSRMLS_CC, "z", &group) == FAILURE) {
+		return;
+	}
+	if (Z_TYPE_P(group) != IS_STRING) {
+		php_error_docref(NULL, E_WARNING, "the parameters must be a string");
+		RETURN_FALSE;
+	} else {
+		YYMODEL_G(group) = estrdup(Z_STRVAL_P(group));
+	}
 #endif
 	RETURN_ZVAL(getThis(), 1, 0);
 }
@@ -226,6 +261,17 @@ PHP_METHOD(YYMODEL_EXT_NAME, having)
 		return;
 	}
 	YYMODEL_G(having) = estrdup(ZSTR_VAL(having));
+#else
+	zval *having;
+	if (zend_parse_parameters(argc TSRMLS_CC, "z", &having) == FAILURE) {
+		return;
+	}
+	if (Z_TYPE_P(having) != IS_STRING) {
+		php_error_docref(NULL, E_WARNING, "the parameters must be a string");
+		RETURN_FALSE;
+	} else {
+		YYMODEL_G(having) = estrdup(Z_STRVAL_P(having));
+	}
 #endif
 	RETURN_ZVAL(getThis(), 1, 0);
 }
@@ -237,9 +283,15 @@ PHP_METHOD(YYMODEL_EXT_NAME, select)
 		zval *join_on_message;
 		zval *join_type;
 		zval *self = getThis();
+#if PHP_VERSION_ID >= 70000
 		join_table_name = zend_read_property(yymodel_ce, self, ZEND_STRL(YYMODEL_JOIN_TABLE), 1 ,NULL TSRMLS_CC);
 		join_on_message = zend_read_property(yymodel_ce, self, ZEND_STRL(YYMODEL_JOIN_MESS), 1, NULL TSRMLS_CC);
 		join_type = zend_read_property(yymodel_ce, self, ZEND_STRL(YYMODEL_JOIN_TYPE), 1, NULL TSRMLS_CC);
+#else
+		join_table_name = zend_read_property(yymodel_ce, self, ZEND_STRL(YYMODEL_JOIN_TABLE), 1 TSRMLS_CC);
+		join_on_message = zend_read_property(yymodel_ce, self, ZEND_STRL(YYMODEL_JOIN_MESS), 1 TSRMLS_CC);
+		join_type = zend_read_property(yymodel_ce, self, ZEND_STRL(YYMODEL_JOIN_TYPE), 1 TSRMLS_CC);
+#endif
 
 		sql_len = spprintf(&sql, 0, "select %s from %s %s join %s on %s", YYMODEL_G(field), YYMODEL_G(table_name),
 			Z_STRVAL_P(join_type), Z_STRVAL_P(join_table_name), Z_STRVAL_P(join_on_message));
@@ -260,8 +312,9 @@ PHP_METHOD(YYMODEL_EXT_NAME, select)
 	}
 
 	YYMODEL_G(sql) = sql;
+	YYMODEL_RETURN_STRINGL(sql, sql_len);
 
-	RETURN_STRINGL(sql, sql_len);
+
 }
 
 PHP_METHOD(YYMODEL_EXT_NAME, find)
@@ -281,8 +334,8 @@ PHP_METHOD(YYMODEL_EXT_NAME, find)
 		sql_len = spprintf(&sql, 0, "%s group by %s ", sql, YYMODEL_G(group));
 	}
 	YYMODEL_G(sql) = sql;
-
-	RETURN_STRINGL(sql, sql_len);
+		
+	YYMODEL_RETURN_STRINGL(sql, sql_len);
 }
 
 PHP_METHOD(YYMODEL_EXT_NAME, count)
@@ -302,8 +355,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, count)
 		sql_len = spprintf(&sql, 0, "%s group by %s ", sql, YYMODEL_G(group));
 	}
 	YYMODEL_G(sql) = sql;
-
-	RETURN_STRINGL(sql, sql_len);
+	YYMODEL_RETURN_STRINGL(sql, sql_len);
 }
 
 PHP_METHOD(YYMODEL_EXT_NAME, insert)
@@ -395,10 +447,11 @@ PHP_METHOD(YYMODEL_EXT_NAME, insert)
 		spprintf(&value_str, 0 , "('%s')",value);
 		sql_len = spprintf(&sql, 0, "insert into `%s` %s values %s", YYMODEL_G(table_name),
 			key_str, value_str);
+#else
 #endif
 		YYMODEL_G(sql) = estrdup(sql);
 	}
-	RETURN_STRINGL(sql, sql_len);
+	YYMODEL_RETURN_STRINGL(sql, sql_len);
 }
 
 PHP_METHOD(YYMODEL_EXT_NAME, delete) {
@@ -407,7 +460,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, delete) {
 		sql_len = spprintf(&sql, 0, "%s where %s", sql, YYMODEL_G(where));
 	}
 	YYMODEL_G(sql) = estrdup(sql);
-	RETURN_STRINGL(sql, sql_len);
+	YYMODEL_RETURN_STRINGL(sql, sql_len);
 }
 
 PHP_METHOD(YYMODEL_EXT_NAME, update) {
@@ -470,7 +523,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, update) {
 	}
 
 	YYMODEL_G(sql) = estrdup(sql);
-	RETURN_STRINGL(sql, sql_len);
+	YYMODEL_RETURN_STRINGL(sql, sql_len);
 }
 
 PHP_METHOD(YYMODEL_EXT_NAME, join)
@@ -509,12 +562,12 @@ PHP_METHOD(YYMODEL_EXT_NAME, join)
 	if ((Z_TYPE_P(join_table_name) != IS_STRING) || 
 		(Z_TYPE_P(join_on_message) != IS_STRING)) {
 		php_error_docref(NULL, E_WARNING, "the parameters must be a string");
-		RETURN_FAILRE;
+		RETURN_FALSE;
 	}
 	if (argc == 3) {
 		if (Z_TYPE_P(join_type) != IS_STRING) {
 			php_error_docref(NULL, E_WARNING, "the parameters must be a string");
-			RETURN_FAILRE;
+			RETURN_FALSE;
 		} else {
 			if (strcmp(Z_STRVAL_P(join_type),"inner") == 0 || strcmp(Z_STRVAL_P(join_type), "left") == 0 
 		 		|| strcmp(Z_STRVAL_P(join_type),"right") == 0) {
@@ -533,7 +586,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, join)
 
 PHP_METHOD(YYMODEL_EXT_NAME, getLastSql)
 {
-	RETURN_STRINGL(YYMODEL_G(sql), strlen(YYMODEL_G(sql)));
+	YYMODEL_RETURN_STRINGL(YYMODEL_G(sql), strlen(YYMODEL_G(sql)));
 }
 
 PHP_METHOD(YYMODEL_EXT_NAME, __destruct)

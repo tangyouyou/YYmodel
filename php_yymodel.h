@@ -57,8 +57,15 @@ extern zend_module_entry yymodel_module_entry;
 #define YYMODEL_DELETE      "delete"
 #define YYMODEL_FIND        "find"
 
+#if PHP_VERSION_ID >= 70000
+#define   YYMODEL_RETURN_STRINGL(k,l) RETURN_STRINGL(k,l)
+#else
+#define   YYMODEL_RETURN_STRINGL(k,l) RETURN_STRINGL(k,l,0)
+#endif
+
 ZEND_BEGIN_MODULE_GLOBALS(yymodel)
-	   zend_string *table_name;
+#if PHP_VERSION_ID >= 70000
+     zend_string *table_name;
      zend_string *field;
      zend_string *where;
      zend_string *limit;
@@ -66,6 +73,16 @@ ZEND_BEGIN_MODULE_GLOBALS(yymodel)
      zend_string *group;
      zend_string *having;
      zend_string *sql;
+#else
+     char *table_name;
+     char *field;
+     char *where;
+     char *limit;
+     char *order;
+     char *group;
+     char *having;
+     char *sql;
+#endif
      
      zend_bool is_where;
      zend_bool is_order;
@@ -82,7 +99,14 @@ extern ZEND_DECLARE_MODULE_GLOBALS(yymodel);
    You are encouraged to rename these macros something shorter, see
    examples in any other php module directory.
 */
-#define YYMODEL_G(v) ZEND_MODULE_GLOBALS_ACCESSOR(yymodel, v)
+//#define YYMODEL_G(v) ZEND_MODULE_GLOBALS_ACCESSOR(yymodel, v)
+
+#ifdef ZTS
+#define YYMODEL_G(v) TSRMG(yymodel_globals_id, zend_yymodel_globals *, v)
+#else
+#define YYMODEL_G(v) (yymodel_globals.v)
+#endif
+
 
 #if defined(ZTS) && defined(COMPILE_DL_YYMODEL)
 ZEND_TSRMLS_CACHE_EXTERN();
