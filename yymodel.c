@@ -477,6 +477,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, update) {
 		HashTable *ht;
 		ht = Z_ARRVAL_P(data);
 		int number;
+		smart_str buf = {0};
 #if PHP_VERSION_ID >= 70000
 		zend_ulong num_key;
 		zend_string *str_key;
@@ -484,7 +485,6 @@ PHP_METHOD(YYMODEL_EXT_NAME, update) {
 		//char update_str[1024];
 		//size_t update_len;
 		number = zend_hash_num_elements(ht);
-		smart_str buf = {0};
 		//smart_str buf1 = {0};
 
 		ZEND_HASH_FOREACH_KEY_VAL(ht, num_key, str_key, entry) {
@@ -512,10 +512,15 @@ PHP_METHOD(YYMODEL_EXT_NAME, update) {
 			ulong idx=0;
 
 			zend_hash_get_current_key(ht, &key, &idx, 0);
-
+				sql_len = spprintf(&sql, 0, "`%s`='%s',",
+				Z_STRVAL_PP(ppzval), key);
+			smart_str_appendl(&buf,sql,sql_len);
+			smart_str_0(&buf);
 			zend_hash_move_forward(ht);
 		}
-
+		sql_len = spprintf(&sql, buf.len + 2, "update `%s` set %s", YYMODEL_G(table_name),
+			buf.c);
+		smart_str_free(&buf);
 #endif
 	}
 	if (YYMODEL_G(is_where) == 1) {
