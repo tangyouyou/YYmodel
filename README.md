@@ -4,7 +4,7 @@
 php5.2+
 
 ### install
-
+```
 git clone https://github.com/tangyouyou/YYmodel.git
 
 /path/to/phpize
@@ -12,7 +12,7 @@ git clone https://github.com/tangyouyou/YYmodel.git
 ./configure --with-php-config=/path/to/php-config
 
 make && make install
-
+```
 
 
 ### 例子如下：
