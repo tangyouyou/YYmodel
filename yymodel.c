@@ -453,54 +453,67 @@ PHP_METHOD(YYMODEL_EXT_NAME, insert)
 	uint   string_key_len;
 	HashPosition pos;
 	zval **entry,*new_val; 
-	ulong  num_key;  
-	
-	zend_hash_internal_pointer_reset(ht);
-	
-	while(zend_hash_get_current_data(ht, (void**)&ppzval) == SUCCESS) {
-		char *key;
-		ulong idx = 0;
-		
-		zend_hash_get_current_key(ht, &key, &idx, 0);
-
-		array_init_size(return_value, zend_hash_num_elements(ht));
-		if(!zend_hash_num_elements(ht)){
-			return;
-		}
-		zend_hash_internal_pointer_reset_ex(ht, &pos);
-       // while (zend_hash_get_current_data_ex(ht, (void **)&entry, &pos) == SUCCESS){
-        //                MAKE_STD_ZVAL(new_val);
-//
-  //                      switch (zend_hash_get_current_key_ex(ht, &string_key, &string_key_len, &num_key, 1, &pos)) {
-    //                            case HASH_KEY_IS_STRING:
-      //                                  ZVAL_STRINGL(new_val, string_key, string_key_len - 1, 0);
-        //                                zend_hash_next_index_insert(Z_ARRVAL_P(return_value), &new_val, sizeof(zval *), NULL);
-          //                              break;
-
-            //                    case HASH_KEY_IS_LONG:
-              //                          Z_TYPE_P(new_val) = IS_LONG;
-                //                        Z_LVAL_P(new_val) = num_key;
-                  //                      zend_hash_next_index_insert(Z_ARRVAL_P(return_value), &new_val, sizeof(zval *), NULL);
-                    //                    break;
-                      //  }
-                //}
-
-                //zend_hash_move_forward_ex(ht, &pos);
+	ulong num_key = 0;  
+	int count;
+	count = zend_hash_num_elements(ht);	
+	if (!count) {
+		return;
 	}
+	array_init_size(return_value, zend_hash_num_elements(ht));
+	//zend_hash_internal_pointer_reset_ex(ht, &pos);
+        //while (zend_hash_get_current_data_ex(ht, (void **)&entry, &pos) == SUCCESS) {
+//		zend_hash_get_current_key_ex(ht, &string_key, &string_key_len, &num_key, 1, &pos);
+//
+//		MAKE_STD_ZVAL(new_val);
+//		ZVAL_STRINGL(new_val, string_key, string_key_len -1 ,0);
+//
+//		zend_hash_next_index_insert(Z_ARRVAL_P(return_value), &new_val, sizeof(zval *), NULL);
+//
+  //              zend_hash_move_forward_ex(ht, &pos);
+    //    }
+    	zend_hash_internal_pointer_reset_ex(ht, &pos);
+        while (zend_hash_get_current_data_ex(ht, (void **)&entry, &pos) == SUCCESS) {
+                MAKE_STD_ZVAL(new_val);
 
-		//char *delim_char = ",";
-		//char *key_str;
-		//zval *delim;
-		//MAKE_STD_ZVAL(delim);
-                //ZVAL_STRING(delim,",", 0);
-                //php_implode(delim, return_value, return_value);
+                switch (zend_hash_get_current_key_ex(ht, &string_key, &string_key_len, &num_key, 1, &pos)) {
+                        case HASH_KEY_IS_STRING:
+                                ZVAL_STRINGL(new_val, string_key, string_key_len - 1, 0);
+                                zend_hash_next_index_insert(Z_ARRVAL_P(return_value), &new_val, sizeof(zval *), NULL);
+                                break;
 
-                //key = Z_STRVAL_P(return_value);
+                        case HASH_KEY_IS_LONG:
+                                Z_TYPE_P(new_val) = IS_LONG;
+                                Z_LVAL_P(new_val) = num_key;
+                                zend_hash_next_index_insert(Z_ARRVAL_P(return_value), &new_val, sizeof(zval *), NULL);
+                                break;
+                }
 
-                //spprintf(&key_str, 0 , "(%s)",Z_STRVAL_P(return_value));
+                zend_hash_move_forward_ex(ht, &pos);
+        }
+	char *delim_char = ",";
+	zval *delim;
+	MAKE_STD_ZVAL(delim);
+	ZVAL_STRING(delim, delim_char, 0);
+	php_implode(delim, return_value, return_value TSRMLS_CC);
+	spprintf(&key_str, 0 , "(%s)", Z_STRVAL_P(return_value));
 
-                //array_init_size(return_value, zend_hash_num_elements(ht));
-		//array_init_size(Z_ARRVAL_P(return_value), zend_hash_num_elements(ht));
+        array_init_size(return_value, count);
+
+        zend_hash_internal_pointer_reset_ex(ht, &pos);
+        while (zend_hash_get_current_data_ex(ht, (void **)&entry, &pos) == SUCCESS) {
+                zval_add_ref(entry);
+                zend_hash_next_index_insert(Z_ARRVAL_P(return_value), entry, sizeof(zval *), NULL);
+                zend_hash_move_forward_ex(ht, &pos);
+        }
+	char *delim_char_char = "','";
+        ZVAL_STRING(delim, delim_char_char, 3);
+        php_implode(delim, return_value, return_value TSRMLS_CC);
+        spprintf(&value_str, 0 , "('%s')", Z_STRVAL_P(return_value));
+        efree(delim);
+
+	sql_len = spprintf(&sql, 0, "insert into `%s` %s values %s", YYMODEL_G(table_name),
+			key_str, value_str);
+
 #endif
 		YYMODEL_G(sql) = estrdup(sql);
 	}
