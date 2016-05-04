@@ -130,9 +130,8 @@ PHP_METHOD(YYMODEL_EXT_NAME, field)
 	if (Z_TYPE_P(field) == IS_ARRAY) {
 	HashTable *ht;
 	ht = Z_ARRVAL_P(field);
-#if PHP_VERSION_ID >= 70000
 	char *delim_char = ",";
-
+#if PHP_VERSION_ID >= 70000
 	// 这里需将delim_char的长度强制为1
 	zend_string *delim = zend_string_init(delim_char, 1, 0);
 	php_implode(delim, field, return_value);
@@ -140,7 +139,12 @@ PHP_METHOD(YYMODEL_EXT_NAME, field)
 
 	zend_string_release(delim);
 #else
-
+	zval *delim;
+	MAKE_STD_ZVAL(delim);
+	ZVAL_STRING(delim, delim_char, 0);
+	php_implode(delim, field, return_value TSRMLS_CC);
+	YYMODEL_G(field) = Z_STRVAL_P(return_value);
+	efree(delim);
 #endif
 	}
 	RETURN_ZVAL(getThis(), 1, 0);
