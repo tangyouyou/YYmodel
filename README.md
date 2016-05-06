@@ -118,6 +118,28 @@ var_dump($row);
 
 ```
 
+# 一份测试案例
+```
+<?php
+$model = new YYmodel('test');
+
+$data = array('username'=>'tangyouyou','password'=>'123456','test'=>'78910');
+
+$sql = $model->where('uid=5')->update($data);
+
+$sql = $model->getLastSql();
+
+$sql = $model->insert($data);
+
+$field = array('username','password');
+
+$sql = $model->field($field)->where('userid>55')->limit("0,10")->select();
+
+$sql = $model->field($field)->where('uid>1')->join('test','test.uid=user.uid')->limit('55')->select();
+
+
+```
+
 
 
 
