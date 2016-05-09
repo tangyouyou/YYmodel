@@ -63,6 +63,7 @@ extern zend_module_entry yymodel_module_entry;
 #define   YYMODEL_RETURN_STRINGL(k,l) RETURN_STRINGL(k,l,0)
 #endif
 
+
 ZEND_BEGIN_MODULE_GLOBALS(yymodel)
 #if PHP_VERSION_ID >= 70000
      zend_string *table_name;
