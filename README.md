@@ -18,12 +18,26 @@ make && make install
 ### 例子如下：
 
 $table_name = 'user';
+
 $model = new yymodel($table_name);
-$model->field('uid,username')->select();
+
+$sql = $model->field('uid,username')->select();
+
+//$sql = "select uid,username from user";
+
+var_dump($sql);
+
+
 
 或者采用数组的形式
 $field = array('uid','username');
-$model->field($field)->select();
+
+$sql = $model->field($field)->select();
+
+//$sql = "select uid,username from user";
+
+var_dump($sql);
+
 
 # 支持where、limit、group、order、join等语法
 
