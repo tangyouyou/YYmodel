@@ -44,8 +44,6 @@ zend_class_entry *yymodel_ce;
 char *sql;
 int sql_len;
 
-/* True global resources - no need for thread safety here */
-
 
 PHP_INI_BEGIN()
    STD_PHP_INI_ENTRY("yymodel.table_name", "test", PHP_INI_ALL, OnUpdateString, table_name, zend_yymodel_globals, yymodel_globals)
@@ -65,38 +63,6 @@ PHP_INI_BEGIN()
    STD_PHP_INI_BOOLEAN("yymodel.is_join", "0", PHP_INI_ALL, OnUpdateBool, is_join, zend_yymodel_globals, yymodel_globals)
 PHP_INI_END()
 
-// char *get_array_keys(HashTable *ht, int numbers TSRMLS_DC)
-// {
-// 	zend_ulong num_key;
-// 	zend_string *str_key;
-// 	zval *entry;
-// 	zval new_val;
-// 	char *delim_char = ",";
-// 	char *key_str;
-// 	zend_string *key;
-// 	array_init_size(return_value, numbers);
-//             if (!numbers) {
-//                     return;
-//             }
-//             zend_hash_real_init(Z_ARRVAL_P(return_value), 1);
-//             ZEND_HASH_FILL_PACKED(Z_ARRVAL_P(return_value)) {
-//                     /* Go through input array and add keys to the return array */
-//                     ZEND_HASH_FOREACH_KEY_VAL_IND(ht, num_key, str_key, entry) {
-//                             if (str_key) {
-//                                     ZVAL_STR_COPY(&new_val, str_key);
-//                             } else {
-//                                     ZVAL_LONG(&new_val, num_key);
-//                             }
-//                             ZEND_HASH_FILL_ADD(&new_val);
-//                     } ZEND_HASH_FOREACH_END();
-//             } ZEND_HASH_FILL_END();
-// 	// 这里需将delim_char的长度强制为1
-// 	zend_string *delim = zend_string_init(delim_char, 1, 0);
-// 	php_implode(delim, return_value, return_value);
-// 	key = Z_STRVAL_P(return_value);
-// 	spprintf(&key_str, 0 , "(%s)",key);
-// 	return key_str;
-// }
 
 PHP_METHOD(YYMODEL_EXT_NAME, __construct)
 {
@@ -154,9 +120,6 @@ PHP_METHOD(YYMODEL_EXT_NAME, where)
 {
 	int argc = ZEND_NUM_ARGS();
 	YYMODEL_G(is_where) = 1;
-
-	// int wherenum = 0;
-	// php_printf("%d\n",wherenum);
 
 #if PHP_VERSION_ID >=70000 
 	zend_string *where;
@@ -422,7 +385,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, insert)
 	if (zend_parse_parameters(argc TSRMLS_CC, "z", &data) == FAILURE) {
 		return;
 	}
-	// INSERT INTO `yy_admin` (`uid`, `username`, `password`) VALUES ('2', 'username', 'password');
+
 	if (Z_TYPE_P(data) == IS_STRING) {
 		sql_len = spprintf(&sql, 0, "insert into `%s` values (%s)", YYMODEL_G(table_name), Z_STRVAL_P(data));
 	}
@@ -489,10 +452,9 @@ PHP_METHOD(YYMODEL_EXT_NAME, insert)
 
         char *delim_char_char = "','";
 
-		// 这里需将delim_char的长度强制为1
+		// 这里需将delim_char的长度强制为3
 		zend_string *delim_char_value = zend_string_init(delim_char_char, 3, 0);
 
-		// 这里需将delim_char的长度强制为1
 		php_implode(delim_char_value, return_value, return_value);
 
 		value = Z_STRVAL_P(return_value);
@@ -513,17 +475,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, insert)
 		return;
 	}
 	array_init_size(return_value, zend_hash_num_elements(ht));
-	//zend_hash_internal_pointer_reset_ex(ht, &pos);
-        //while (zend_hash_get_current_data_ex(ht, (void **)&entry, &pos) == SUCCESS) {
-//		zend_hash_get_current_key_ex(ht, &string_key, &string_key_len, &num_key, 1, &pos);
-//
-//		MAKE_STD_ZVAL(new_val);
-//		ZVAL_STRINGL(new_val, string_key, string_key_len -1 ,0);
-//
-//		zend_hash_next_index_insert(Z_ARRVAL_P(return_value), &new_val, sizeof(zval *), NULL);
-//
-  //              zend_hash_move_forward_ex(ht, &pos);
-    //    }
+
     	zend_hash_internal_pointer_reset_ex(ht, &pos);
         while (zend_hash_get_current_data_ex(ht, (void **)&entry, &pos) == SUCCESS) {
                 MAKE_STD_ZVAL(new_val);
@@ -583,7 +535,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, delete) {
 }
 
 PHP_METHOD(YYMODEL_EXT_NAME, update) {
-	// UPDATE `yy_admin` SET `uid`='5', `username`='username', `password`='password' WHERE (`uid`='5');
+
 	int argc = ZEND_NUM_ARGS();
 	zval *data;
 	if (zend_parse_parameters(argc TSRMLS_CC, "z", &data) == FAILURE) {
@@ -601,10 +553,8 @@ PHP_METHOD(YYMODEL_EXT_NAME, update) {
 		zend_ulong num_key;
 		zend_string *str_key;
 		zval *entry;
-		//char update_str[1024];
-		//size_t update_len;
+	
 		number = zend_hash_num_elements(ht);
-		//smart_str buf1 = {0};
 
 		ZEND_HASH_FOREACH_KEY_VAL(ht, num_key, str_key, entry) {
 			zend_string *s = zval_get_string(entry);
@@ -656,6 +606,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, join)
 	int argc = ZEND_NUM_ARGS();
 	zval *self;
 	self = getThis();
+
 #if PHP_VERSION_ID >= 70000
 	zend_string *join_table_name;
 	zend_string *join_on_message;
