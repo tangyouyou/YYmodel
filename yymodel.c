@@ -54,6 +54,7 @@ PHP_INI_BEGIN()
    STD_PHP_INI_ENTRY("yymodel.group", "", PHP_INI_ALL, OnUpdateString, group, zend_yymodel_globals, yymodel_globals)
    STD_PHP_INI_ENTRY("yymodel.having", "", PHP_INI_ALL, OnUpdateString, having, zend_yymodel_globals, yymodel_globals)
    STD_PHP_INI_ENTRY("yymodel.sql", "", PHP_INI_ALL, OnUpdateString, sql, zend_yymodel_globals, yymodel_globals)
+   STD_PHP_INI_ENTRY("yymodel.prefix_name", "", PHP_INI_ALL, OnUpdateString, prefix_name, zend_yymodel_globals, yymodel_globals)
 
    STD_PHP_INI_BOOLEAN("yymodel.is_where", "0", PHP_INI_ALL, OnUpdateBool, is_where, zend_yymodel_globals, yymodel_globals)
    STD_PHP_INI_BOOLEAN("yymodel.is_limit", "0", PHP_INI_ALL, OnUpdateBool, is_limit, zend_yymodel_globals, yymodel_globals)
@@ -669,6 +670,32 @@ PHP_METHOD(YYMODEL_EXT_NAME, __destruct)
 	YYMODEL_G(is_where) = 0;
 }
 
+PHP_METHOD(YYMODEL_EXT_NAME, setPrefix)
+{
+	int argc = ZEND_NUM_ARGS();
+	char *table_name;
+	int table_len;
+#if PHP_VERSION_ID >= 70000
+	zend_string *prefix;
+	if (zend_parse_parameters(argc, "S", &prefix) == FAILURE) {
+		return;
+	}
+	YYMODEL_G(prefix_name) = estrdup(ZSTR_VAL(prefix));
+#else
+	zval *prefix;
+	if (zend_parse_parameters(argc TSRMLS_CC, "z", &prefix) == FAILURE) {
+		return;
+	}
+	if (Z_TYPE_P(prefix) != IS_STRING) {
+		php_error_docref(NULL, E_WARNING, "the parameters must be a string");
+		RETURN_FALSE;
+	}
+	YYMODEL_G(prefix_name) = estrdup(Z_STRVAL_P(prefix));
+#endif
+	table_len = spprintf(&table_name, 0 , "%s_%s", YYMODEL_G(prefix_name), YYMODEL_G(table_name));
+	YYMODEL_G(table_name) = table_name;
+}
+
 static zend_function_entry yymodel_methods[] = {
 	PHP_ME(YYMODEL_EXT_NAME, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	PHP_ME(YYMODEL_EXT_NAME, __destruct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
@@ -688,6 +715,7 @@ static zend_function_entry yymodel_methods[] = {
 
 	PHP_ME(YYMODEL_EXT_NAME, join, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(YYMODEL_EXT_NAME, getLastSql, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(YYMODEL_EXT_NAME, setPrefix, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL}
 };
 

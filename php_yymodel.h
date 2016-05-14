@@ -74,6 +74,7 @@ ZEND_BEGIN_MODULE_GLOBALS(yymodel)
      zend_string *group;
      zend_string *having;
      zend_string *sql;
+     zend_string *prefix_name;
 #else
      char *table_name;
      char *field;
@@ -83,6 +84,7 @@ ZEND_BEGIN_MODULE_GLOBALS(yymodel)
      char *group;
      char *having;
      char *sql;
+     char *prefix_name;
 #endif
      
      zend_bool is_where;
