@@ -38,6 +38,27 @@ $sql = $model->field($field)->select();
 
 var_dump($sql);
 
+# 支持数据表前缀
+
+$model = new YYmodel('user','yy_');
+
+$str = $model->select();
+
+var_dump($str);
+
+string(21) "select * from yy_test"
+
+或者使用如下功能
+
+$model = new YYmodel('user');
+
+$model->setPrefix('yy_');
+
+var_dump($str);
+
+string(21) "select * from yy_test"
+
+
 
 # 支持where、limit、group、order、join等语法
 
