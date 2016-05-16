@@ -70,13 +70,28 @@ PHP_METHOD(YYMODEL_EXT_NAME, __construct)
 	int argc = ZEND_NUM_ARGS();
 
 	zval *table;
-	if (zend_parse_parameters(argc TSRMLS_CC, "z", &table) == FAILURE) {
+	zval *prefix;
+	char *table_name;
+	int table_len;
+	if (zend_parse_parameters(argc TSRMLS_CC, "z|z", &table, &prefix) == FAILURE) {
 		return;
 	}
 	if (Z_TYPE_P(table) != IS_STRING) {
 		php_error_docref(NULL, E_ERROR, "the table name must be a string");
+		RETURN_FALSE;
 	}
-	YYMODEL_G(table_name) = estrdup(Z_STRVAL_P(table));
+	if (argc == 2) {
+		if (Z_TYPE_P(prefix) != IS_STRING) {
+		   php_error_docref(NULL, E_ERROR, "the prefix name must be a string");
+		   RETURN_FALSE;
+		} else {
+		   YYMODEL_G(prefix_name) = estrdup(Z_STRVAL_P(prefix));
+		   table_len = spprintf(&table_name, 0 , "%s%s", YYMODEL_G(prefix_name), YYMODEL_G(table_name));
+        	   YYMODEL_G(table_name) = table_name;
+		}
+	} else {
+	    YYMODEL_G(table_name) = estrdup(Z_STRVAL_P(table));
+	}
 }
 
 PHP_METHOD(YYMODEL_EXT_NAME, field)
@@ -692,7 +707,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, setPrefix)
 	}
 	YYMODEL_G(prefix_name) = estrdup(Z_STRVAL_P(prefix));
 #endif
-	table_len = spprintf(&table_name, 0 , "%s_%s", YYMODEL_G(prefix_name), YYMODEL_G(table_name));
+	table_len = spprintf(&table_name, 0 , "%s%s", YYMODEL_G(prefix_name), YYMODEL_G(table_name));
 	YYMODEL_G(table_name) = table_name;
 }
 
