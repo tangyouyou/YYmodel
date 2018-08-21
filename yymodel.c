@@ -280,25 +280,25 @@ PHP_METHOD(YYMODEL_EXT_NAME, select)
 		join_type = zend_read_property(yymodel_ce, self, ZEND_STRL(YYMODEL_JOIN_TYPE), 1 TSRMLS_CC);
 #endif
 
-		sql_len = spprintf(&sql, 0, "select %s from %s %s join %s on %s", YYMODEL_G(field), YYMODEL_G(table_name),
+		sql_len = spprintf(&sql, 0, "SELECT %s FROM %s %s JOIN %s ON %s", YYMODEL_G(field), YYMODEL_G(table_name),
 			Z_STRVAL_P(join_type), Z_STRVAL_P(join_table_name), Z_STRVAL_P(join_on_message));
 	} else {
-		sql_len = spprintf(&sql, 0, "select %s from %s", YYMODEL_G(field), YYMODEL_G(table_name));
+		sql_len = spprintf(&sql, 0, "SELECT %s FROM %s", YYMODEL_G(field), YYMODEL_G(table_name));
 	}
 	if (YYMODEL_G(is_where) == 1) {
-		sql_len = spprintf(&sql, 0, "%s where %s ", sql, YYMODEL_G(where));
+		sql_len = spprintf(&sql, 0, "%s WHERE %s ", sql, YYMODEL_G(where));
 		YYMODEL_G(is_where) = 0;
 	}
 	if (YYMODEL_G(is_order) == 1) {
-		sql_len = spprintf(&sql, 0, "%s order by %s ", sql, YYMODEL_G(order));
+		sql_len = spprintf(&sql, 0, "%s ORDER BY %s ", sql, YYMODEL_G(order));
 		YYMODEL_G(is_order) = 0;
 	}
 	if (YYMODEL_G(is_limit) == 1) {
-		sql_len = spprintf(&sql, 0, "%s limit %s ", sql, YYMODEL_G(limit));
+		sql_len = spprintf(&sql, 0, "%s LIMIT %s ", sql, YYMODEL_G(limit));
 		YYMODEL_G(is_limit) = 0;
 	}
 	if (YYMODEL_G(is_group) == 1) {
-		sql_len = spprintf(&sql, 0, "%s group by %s ", sql, YYMODEL_G(group));
+		sql_len = spprintf(&sql, 0, "%s GROUP BY %s ", sql, YYMODEL_G(group));
 		YYMODEL_G(is_group) = 0;
 	}
 
@@ -323,27 +323,27 @@ PHP_METHOD(YYMODEL_EXT_NAME, find)
 		join_type = zend_read_property(yymodel_ce, self, ZEND_STRL(YYMODEL_JOIN_TYPE), 1 TSRMLS_CC);
 #endif
 
-		sql_len = spprintf(&sql, 0, "select %s from %s %s join %s on %s limit 1", YYMODEL_G(field), YYMODEL_G(table_name),
+		sql_len = spprintf(&sql, 0, "SELECT %s FROM %s %s JOIN %s ON %s LIMIT 1", YYMODEL_G(field), YYMODEL_G(table_name),
 			Z_STRVAL_P(join_type), Z_STRVAL_P(join_table_name), Z_STRVAL_P(join_on_message));
 		YYMODEL_G(is_join) = 0;
 	} else {
-		sql_len = spprintf(&sql, 0, "select %s from %s limit 1", YYMODEL_G(field), YYMODEL_G(table_name));
+		sql_len = spprintf(&sql, 0, "SELECT %s FROM %s LIMIT 1", YYMODEL_G(field), YYMODEL_G(table_name));
 	}
 
 	if (YYMODEL_G(is_where) == 1) {
-		sql_len = spprintf(&sql, 0, "%s where %s ", sql, YYMODEL_G(where));
+		sql_len = spprintf(&sql, 0, "%s WHERE %s ", sql, YYMODEL_G(where));
 		YYMODEL_G(is_where) = 0;
 	}
 	if (YYMODEL_G(is_order) == 1) {
-		sql_len = spprintf(&sql, 0, "%s order by %s ", sql, YYMODEL_G(order));
+		sql_len = spprintf(&sql, 0, "%s ORDER BY %s ", sql, YYMODEL_G(order));
 		YYMODEL_G(is_order) = 0;
 	}
 	if (YYMODEL_G(is_limit) == 1) {
-		sql_len = spprintf(&sql, 0, "%s limit %s ", sql, YYMODEL_G(limit));
+		sql_len = spprintf(&sql, 0, "%s LIMIT %s ", sql, YYMODEL_G(limit));
 		YYMODEL_G(is_limit) = 0;
 	}
 	if (YYMODEL_G(is_group) == 1) {
-		sql_len = spprintf(&sql, 0, "%s group by %s ", sql, YYMODEL_G(group));
+		sql_len = spprintf(&sql, 0, "%s GROUP BY %s ", sql, YYMODEL_G(group));
 		YYMODEL_G(is_group) = 0;
 	}
 	YYMODEL_G(sql) = sql;
@@ -367,27 +367,27 @@ PHP_METHOD(YYMODEL_EXT_NAME, count)
 		join_on_message = zend_read_property(yymodel_ce, self, ZEND_STRL(YYMODEL_JOIN_MESS), 1 TSRMLS_CC);
 		join_type = zend_read_property(yymodel_ce, self, ZEND_STRL(YYMODEL_JOIN_TYPE), 1 TSRMLS_CC);
 #endif
-		sql_len = spprintf(&sql, 0, "select count(*) from %s %s join %s on %s limit 1", YYMODEL_G(table_name),
+		sql_len = spprintf(&sql, 0, "SELECT COUNT(*) FROM %s %s JOIN %s ON %s LIMIT 1", YYMODEL_G(table_name),
 			Z_STRVAL_P(join_type), Z_STRVAL_P(join_table_name), Z_STRVAL_P(join_on_message));
 		YYMODEL_G(is_join) = 0;
 	} else {
-		sql_len = spprintf(&sql, 0, "select count(*) from %s", YYMODEL_G(table_name));
+		sql_len = spprintf(&sql, 0, "SELECT COUNT(*) FROM %s", YYMODEL_G(table_name));
 	}
 
 	if (YYMODEL_G(is_where) == 1) {
-		sql_len = spprintf(&sql, 0, "%s where %s ", sql, YYMODEL_G(where));
+		sql_len = spprintf(&sql, 0, "%s WHERE %s ", sql, YYMODEL_G(where));
 		YYMODEL_G(is_where) = 0;
 	}
 	if (YYMODEL_G(is_order) == 1) {
-		sql_len = spprintf(&sql, 0, "%s order by %s ", sql, YYMODEL_G(order));
+		sql_len = spprintf(&sql, 0, "%s ORDER BY %s ", sql, YYMODEL_G(order));
 		YYMODEL_G(is_order) = 0;
 	}
 	if (YYMODEL_G(is_limit) == 1) {
-		sql_len = spprintf(&sql, 0, "%s limit %s ", sql, YYMODEL_G(limit));
+		sql_len = spprintf(&sql, 0, "%s LIMIT %s ", sql, YYMODEL_G(limit));
 		YYMODEL_G(is_limit) = 0;
 	}
 	if (YYMODEL_G(is_group) == 1) {
-		sql_len = spprintf(&sql, 0, "%s group by %s ", sql, YYMODEL_G(group));
+		sql_len = spprintf(&sql, 0, "%s GROUP BY %s ", sql, YYMODEL_G(group));
 		YYMODEL_G(is_group) = 0;
 	}
 	YYMODEL_G(sql) = sql;
@@ -403,7 +403,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, insert)
 	}
 
 	if (Z_TYPE_P(data) == IS_STRING) {
-		sql_len = spprintf(&sql, 0, "insert into `%s` values (%s)", YYMODEL_G(table_name), Z_STRVAL_P(data));
+		sql_len = spprintf(&sql, 0, "INSERT INTO `%s` VALUES (%s)", YYMODEL_G(table_name), Z_STRVAL_P(data));
 	}
 	if (Z_TYPE_P(data) == IS_ARRAY) {
 		HashTable *ht;
@@ -476,7 +476,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, insert)
 		value = Z_STRVAL_P(return_value);
 
 		spprintf(&value_str, 0 , "('%s')",value);
-		sql_len = spprintf(&sql, 0, "insert into `%s` %s values %s", YYMODEL_G(table_name),
+		sql_len = spprintf(&sql, 0, "INSERT INTO `%s` %s VALUES %s", YYMODEL_G(table_name),
 			key_str, value_str);
 #else
 	zval **ppzval;
@@ -532,7 +532,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, insert)
         spprintf(&value_str, 0 , "('%s')", Z_STRVAL_P(return_value));
         efree(delim);
 
-	sql_len = spprintf(&sql, 0, "insert into `%s` %s values %s", YYMODEL_G(table_name),
+	sql_len = spprintf(&sql, 0, "INSERT INTO `%s` %s VALUES %s", YYMODEL_G(table_name),
 			key_str, value_str);
 
 #endif
@@ -542,9 +542,9 @@ PHP_METHOD(YYMODEL_EXT_NAME, insert)
 }
 
 PHP_METHOD(YYMODEL_EXT_NAME, delete) {
-	sql_len = spprintf(&sql, 0, "delete from %s", YYMODEL_G(table_name));
+	sql_len = spprintf(&sql, 0, "DELETE FROM %s", YYMODEL_G(table_name));
 	if (YYMODEL_G(is_where) == 1) {
-		sql_len = spprintf(&sql, 0, "%s where %s", sql, YYMODEL_G(where));
+		sql_len = spprintf(&sql, 0, "%s WHERE %s", sql, YYMODEL_G(where));
 	}
 	YYMODEL_G(sql) = estrdup(sql);
 	YYMODEL_RETURN_STRINGL(sql, sql_len);
@@ -558,7 +558,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, update) {
 		return;
 	}
 	if (Z_TYPE_P(data) == IS_STRING) {
-		sql_len = spprintf(&sql, 0, "update `%s` set %s", YYMODEL_G(table_name), Z_STRVAL_P(data));
+		sql_len = spprintf(&sql, 0, "UPDATE `%s` SET %s", YYMODEL_G(table_name), Z_STRVAL_P(data));
 	}
 	if (Z_TYPE_P(data) == IS_ARRAY) {
 		HashTable *ht;
@@ -583,7 +583,7 @@ PHP_METHOD(YYMODEL_EXT_NAME, update) {
 			
 		} ZEND_HASH_FOREACH_END();
 
-		sql_len = spprintf(&sql, ZSTR_LEN(buf.s) + 2, "update `%s` set %s", YYMODEL_G(table_name),
+		sql_len = spprintf(&sql, ZSTR_LEN(buf.s) + 2, "UPDATE `%s` SET %s", YYMODEL_G(table_name),
 				ZSTR_VAL(buf.s));
 		smart_str_free(&buf);
 #else
@@ -603,13 +603,13 @@ PHP_METHOD(YYMODEL_EXT_NAME, update) {
 			smart_str_0(&buf);
 			zend_hash_move_forward(ht);
 		}
-		sql_len = spprintf(&sql, buf.len + 2, "update `%s` set %s", YYMODEL_G(table_name),
+		sql_len = spprintf(&sql, buf.len + 2, "UPDATE `%s` SET %s", YYMODEL_G(table_name),
 			buf.c);
 		smart_str_free(&buf);
 #endif
 	}
 	if (YYMODEL_G(is_where) == 1) {
-		sql_len = spprintf(&sql, 0, "%s where %s", sql, YYMODEL_G(where));
+		sql_len = spprintf(&sql, 0, "%s WHERE %s", sql, YYMODEL_G(where));
 	}
 
 	YYMODEL_G(sql) = estrdup(sql);
