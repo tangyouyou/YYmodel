@@ -55,6 +55,7 @@ PHP_INI_BEGIN()
    STD_PHP_INI_ENTRY("yymodel.having", "", PHP_INI_ALL, OnUpdateString, having, zend_yymodel_globals, yymodel_globals)
    STD_PHP_INI_ENTRY("yymodel.sql", "", PHP_INI_ALL, OnUpdateString, sql, zend_yymodel_globals, yymodel_globals)
    STD_PHP_INI_ENTRY("yymodel.prefix_name", "", PHP_INI_ALL, OnUpdateString, prefix_name, zend_yymodel_globals, yymodel_globals)
+   STD_PHP_INI_ENTRY("yymodel.database_name", "", PHP_INI_ALL, OnUpdateString, database_name, zend_yymodel_globals, yymodel_globals)
 
    STD_PHP_INI_BOOLEAN("yymodel.is_where", "0", PHP_INI_ALL, OnUpdateBool, is_where, zend_yymodel_globals, yymodel_globals)
    STD_PHP_INI_BOOLEAN("yymodel.is_limit", "0", PHP_INI_ALL, OnUpdateBool, is_limit, zend_yymodel_globals, yymodel_globals)
@@ -64,6 +65,12 @@ PHP_INI_BEGIN()
    STD_PHP_INI_BOOLEAN("yymodel.is_join", "0", PHP_INI_ALL, OnUpdateBool, is_join, zend_yymodel_globals, yymodel_globals)
 PHP_INI_END()
 
+ZEND_BEGIN_ARG_INFO_EX(yymodel_construct_arginfo, 0, 0, 1)
+ZEND_ARG_INFO(0, table_name)
+ZEND_ARG_INFO(0, prefix_name)
+ZEND_ARG_INFO(0, database_name)
+ZEND_END_ARG_INFO()
+
 
 PHP_METHOD(YYMODEL_EXT_NAME, __construct)
 {
@@ -71,26 +78,36 @@ PHP_METHOD(YYMODEL_EXT_NAME, __construct)
 
 	zval *table;
 	zval *prefix;
+	zval *database_name;
 	char *table_name;
 	int table_len;
-	if (zend_parse_parameters(argc TSRMLS_CC, "z|z", &table, &prefix) == FAILURE) {
+	if (zend_parse_parameters(argc TSRMLS_CC, "z|zz", &table, &prefix, &database_name) == FAILURE) {
 		return;
 	}
 	if (Z_TYPE_P(table) != IS_STRING) {
 		php_error_docref(NULL, E_ERROR, "the table name must be a string");
 		RETURN_FALSE;
 	}
-	if (argc == 2) {
+	YYMODEL_G(table_name) = estrdup(Z_STRVAL_P(table));
+	if (argc >= 2) {
 		if (Z_TYPE_P(prefix) != IS_STRING) {
 		   php_error_docref(NULL, E_ERROR, "the prefix name must be a string");
 		   RETURN_FALSE;
 		} else {
 		   YYMODEL_G(prefix_name) = estrdup(Z_STRVAL_P(prefix));
 		   table_len = spprintf(&table_name, 0 , "%s%s", YYMODEL_G(prefix_name), YYMODEL_G(table_name));
-        	   YYMODEL_G(table_name) = table_name;
+           YYMODEL_G(table_name) = table_name;
 		}
-	} else {
-	    YYMODEL_G(table_name) = estrdup(Z_STRVAL_P(table));
+	} 
+	if (argc == 3) {
+		if (Z_TYPE_P(database_name) != IS_STRING) {
+			php_error_docref(NULL,  E_ERROR, "the database name must be a string");
+			RETURN_FALSE;
+		} else {
+			YYMODEL_G(database_name) = estrdup(Z_STRVAL_P(database_name));
+			table_len = spprintf(&table_name, 0, "%s.%s", YYMODEL_G(database_name), YYMODEL_G(table_name));
+			YYMODEL_G(table_name) = table_name;
+		}
 	}
 }
 
@@ -711,8 +728,73 @@ PHP_METHOD(YYMODEL_EXT_NAME, setPrefix)
 	YYMODEL_G(table_name) = table_name;
 }
 
+PHP_METHOD(YYMODEL_EXT_NAME, getPrefix)
+{
+	YYMODEL_RETURN_STRINGL(YYMODEL_G(prefix_name), strlen(YYMODEL_G(prefix_name)));
+}
+
+PHP_METHOD(YYMODEL_EXT_NAME, setDataBaseName)
+{
+	int argc = ZEND_NUM_ARGS();
+	char *table_name;
+	int table_len;
+#if PHP_VERSION_ID >= 70000
+	zend_string *database_name;
+	if (zend_parse_parameters(argc, "S", &database_name) == FAILURE) {
+		return;
+	}
+	YYMODEL_G(database_name) = estrdup(ZSTR_VAL(database_name));
+#else
+	zval *database_name;
+	if (zend_parse_parameters(argc TSRMLS_CC, "z", &database_name) == FAILURE) {
+		return;
+	}
+	if (Z_TYPE_P(database_name) != IS_STRING) {
+		php_error_docref(NULL, E_WARNING, "the parameters must be a string");
+		RETURN_FALSE;
+	}
+	YYMODEL_G(database_name) = estrdup(Z_STRVAL_P(database_name));
+#endif
+	table_len = spprintf(&table_name, 0 , "%s.%s%s", YYMODEL_G(database_name), YYMODEL_G(prefix_name), YYMODEL_G(table_name));
+	YYMODEL_G(table_name) = table_name;
+}
+
+PHP_METHOD(YYMODEL_EXT_NAME, getDataBaseName)
+{
+	YYMODEL_RETURN_STRINGL(YYMODEL_G(database_name), strlen(YYMODEL_G(database_name)));
+}
+
+PHP_METHOD(YYMODEL_EXT_NAME, setTableName)
+{
+	int argc = ZEND_NUM_ARGS();
+	char *table_name;
+	int table_len;
+#if PHP_VERSION_ID >= 70000
+	zend_string *table;
+	if (zend_parse_parameters(argc, "S", &table) == FAILURE) {
+		return;
+	}
+	YYMODEL_G(table_name) = estrdup(ZSTR_VAL(table));
+#else
+	zval *table;
+	if (zend_parse_parameters(argc TSRMLS_CC, "z", &table) == FAILURE) {
+		return;
+	}
+	if (Z_TYPE_P(table) != IS_STRING) {
+		php_error_docref(NULL, E_WARNING, "the parameters must be a string");
+		RETURN_FALSE;
+	}
+	YYMODEL_G(table_name) = estrdup(Z_STRVAL_P(table));
+#endif	
+}
+
+PHP_METHOD(YYMODEL_EXT_NAME, getTableName)
+{
+	YYMODEL_RETURN_STRINGL(YYMODEL_G(table_name), strlen(YYMODEL_G(table_name)));
+}
+
 static zend_function_entry yymodel_methods[] = {
-	PHP_ME(YYMODEL_EXT_NAME, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+	PHP_ME(YYMODEL_EXT_NAME, __construct, yymodel_construct_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	PHP_ME(YYMODEL_EXT_NAME, __destruct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
 	PHP_ME(YYMODEL_EXT_NAME, field, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(YYMODEL_EXT_NAME, where, NULL, ZEND_ACC_PUBLIC)
@@ -731,6 +813,11 @@ static zend_function_entry yymodel_methods[] = {
 	PHP_ME(YYMODEL_EXT_NAME, join, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(YYMODEL_EXT_NAME, getLastSql, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(YYMODEL_EXT_NAME, setPrefix, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(YYMODEL_EXT_NAME, getPrefix, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(YYMODEL_EXT_NAME, setDataBaseName, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(YYMODEL_EXT_NAME, getDataBaseName, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(YYMODEL_EXT_NAME, setTableName, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(YYMODEL_EXT_NAME, getTableName, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL}
 };
 
